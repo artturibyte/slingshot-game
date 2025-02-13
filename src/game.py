@@ -20,7 +20,24 @@ class Game:
             pygame.K_RIGHT: False
         }
 
+    def start_screen(self):
+        start = True
+        while start:
+            self.screen.fill((255, 255, 255))
+            font = pygame.font.Font(None, 74)
+            text = font.render("Press Enter to Start", True, (0, 0, 0))
+            self.screen.blit(text, (250, 250))
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        start = False
+
     def run(self):
+        self.start_screen()
         while self.running:
             self.handle_events()
             self.update()
