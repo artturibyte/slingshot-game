@@ -5,8 +5,7 @@ def main():
 
     game = Game()
     game.run()
-    
-    pygame.quit()
+    print("Game Over")
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,5 @@
 import pygame
+from math import atan2
 
 def load_image(file_path):
     """Load an image from the specified file path."""
@@ -26,4 +27,4 @@ def calculate_angle(start_pos, end_pos):
     """Calculate the angle between two positions."""
     delta_x = end_pos[0] - start_pos[0]
     delta_y = end_pos[1] - start_pos[1]
-    return math.atan2(delta_y, delta_x)
+    return atan2(delta_y, delta_x)

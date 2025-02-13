@@ -25,6 +25,7 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("Slingshot Game")
+        self.exit_game = False
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y)
@@ -55,6 +56,7 @@ class Game:
             pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.exit_game = True
                     pygame.quit()
                     exit()
                 elif event.type == pygame.KEYDOWN:
@@ -62,31 +64,48 @@ class Game:
                         start = False
 
     def game_over_screen(self):
-        start = True
-        while start:
+        game_over = True
+        sleep(0.5)
+        while game_over:
+            pygame.event.clear()
             self.screen.fill(WHITE)
             font = pygame.font.Font(None, 74)
             text = font.render("Game Over", True, BLACK)
             self.screen.blit(text, (350, 250))
             score_text = font.render(f"Score: {self.score}", True, BLACK)
             self.screen.blit(score_text, (350, 350))
+            restart_text = font.render("Press Enter to Restart", True, BLACK)
+            self.screen.blit(restart_text, (250, 450))
             pygame.display.flip()
+            sleep(3)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.exit_game = True
                     pygame.quit()
-                    exit()
-        pygame.quit()
-        exit()
-    
+                elif event.type == pygame.KEYDOWN:
+                    
+                    if event.key == pygame.K_RETURN:
+                        print(event.key)
+                        self.reset_game()
+                        game_over = False
+
+    def reset_game(self):
+        self.ball_launched = False
+        self.score = 0
+        self.ball_count = 5
+        self.targets = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10)
+        self.running = True
+
     def run(self):
-        self.start_screen()
-        sleep(0.1)
-        while self.running:
-            self.handle_events()
-            self.update()
-            self.draw()
-            self.clock.tick(60)
-        self.game_over_screen()
+        while not self.exit_game:
+            self.start_screen()
+            while self.running:
+                self.handle_events()
+                self.update()
+                self.draw()
+                self.clock.tick(60)
+            self.game_over_screen()
+        pygame.quit()
 
     def handle_events(self):
         if pygame.event.get(pygame.QUIT): self.running = False
