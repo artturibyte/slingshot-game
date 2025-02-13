@@ -27,7 +27,7 @@ class Ball:
             self.velocity[0] *= self.bounce_damping
 
             # Stop the ball if the bounce is too small
-            if abs(self.velocity[1]) < 0.1:
+            if abs(self.velocity[0]) < 0.05:
                 self.velocity[1] = 0
                 self.velocity[0] = 0
 
@@ -48,3 +48,6 @@ class Ball:
         self.y = y
         self.velocity = [0, 0]
         self.launched = False  # Reset the flag when the ball is reset
+
+    def has_stopped(self):
+        return self.velocity[0] == 0 and self.velocity[1] == 0

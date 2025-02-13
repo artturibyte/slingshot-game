@@ -13,6 +13,7 @@ class Game:
         self.slingshot = Slingshot(100, 500)
         self.targets = [Target(600, 500), Target(700, 400)]
         self.running = True
+        self.ball_launched = False  # Flag to track if the ball has been launched
         self.key_states = {
             pygame.K_UP: False,
             pygame.K_DOWN: False,
@@ -50,29 +51,36 @@ class Game:
                 self.running = False
             
             elif event.type == pygame.KEYDOWN:
-                if event.key in self.key_states:
+                if event.key in self.key_states and not self.ball_launched:
                     self.key_states[event.key] = True
-                elif event.key == pygame.K_RETURN:
+                elif event.key == pygame.K_RETURN and not self.ball_launched:
                     angle, power = self.slingshot.release()
                     self.ball.launch(angle, power)
+                    self.ball_launched = True  # Set the flag to indicate the ball has been launched
                 elif event.key == pygame.K_r:  # Check for the "R" key to reset the ball
                     self.ball.reset(100, 500)
+                    self.ball_launched = False  # Reset the flag when the ball is reset
 
             elif event.type == pygame.KEYUP:
                 if event.key in self.key_states:
                     self.key_states[event.key] = False
 
     def update(self):
-        if self.key_states[pygame.K_UP]:
-            self.slingshot.stretch(0, -1)
-        if self.key_states[pygame.K_DOWN]:
-            self.slingshot.stretch(0, 1)
-        if self.key_states[pygame.K_LEFT]:
-            self.slingshot.stretch(-1, 0)
-        if self.key_states[pygame.K_RIGHT]:
-            self.slingshot.stretch(1, 0)
+        if not self.ball_launched:
+            if self.key_states[pygame.K_UP]:
+                self.slingshot.stretch(0, -1)
+            if self.key_states[pygame.K_DOWN]:
+                self.slingshot.stretch(0, 1)
+            if self.key_states[pygame.K_LEFT]:
+                self.slingshot.stretch(-1, 0)
+            if self.key_states[pygame.K_RIGHT]:
+                self.slingshot.stretch(1, 0)
 
         self.ball.update()
+        if self.ball.has_stopped() and self.ball_launched:
+            self.ball.reset(100, 500)
+            self.ball_launched = False
+
         for target in self.targets:
             if self.ball.check_collision(target):
                 self.targets.remove(target)
