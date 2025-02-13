@@ -8,7 +8,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((800, 600))
         self.clock = pygame.time.Clock()
-        self.bird = Ball(100, 500)
+        self.ball = Ball(100, 500)
         self.slingshot = Slingshot(100, 500)
         self.targets = [Target(600, 500), Target(700, 400)]
         self.running = True
@@ -37,18 +37,18 @@ class Game:
                         self.slingshot.stretch(1, 0)
                     case pygame.K_RETURN:
                         angle, power = self.slingshot.release()
-                        self.bird.launch(angle, power)
+                        self.ball.launch(angle, power)
 
     def update(self):
-        self.bird.update()
+        self.ball.update()
         for target in self.targets:
-            if self.bird.check_collision(target):
+            if self.ball.check_collision(target):
                 self.targets.remove(target)
 
     def draw(self):
         self.screen.fill((255, 255, 255))
         self.slingshot.draw(self.screen)
-        pygame.draw.circle(self.screen, (255, 0, 0), (int(self.bird.x), int(self.bird.y)), self.bird.radius)
+        pygame.draw.circle(self.screen, (255, 0, 0), (int(self.ball.x), int(self.ball.y)), self.ball.radius)
         for target in self.targets:
             target.draw(self.screen)
         pygame.display.flip()
