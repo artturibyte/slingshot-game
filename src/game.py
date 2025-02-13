@@ -3,6 +3,7 @@ from ball import Ball
 from slingshot import Slingshot
 from target import Target
 from time import sleep
+from typing import List
 
 # Constants for ball initial position
 BALL_INITIAL_X = 100
@@ -30,7 +31,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.targets = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10)
+        self.targets: List[Target] = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10)
         self.running = True
         self.ball_launched = False  # Flag to track if the ball has been launched
         self.score = 0  # Initialize score
@@ -56,7 +57,6 @@ class Game:
             pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.exit_game = True
                     pygame.quit()
                     exit()
                 elif event.type == pygame.KEYDOWN:
@@ -65,7 +65,6 @@ class Game:
 
     def game_over_screen(self):
         game_over = True
-        sleep(0.5)
         while game_over:
             pygame.event.clear()
             self.screen.fill(WHITE)
@@ -77,19 +76,18 @@ class Game:
             restart_text = font.render("Press Enter to Restart", True, BLACK)
             self.screen.blit(restart_text, (250, 450))
             pygame.display.flip()
-            sleep(3)
+            sleep(1)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.exit_game = True
                     pygame.quit()
+                    exit()
                 elif event.type == pygame.KEYDOWN:
                     
                     if event.key == pygame.K_RETURN:
-                        print(event.key)
-                        self.reset_game()
                         game_over = False
 
     def reset_game(self):
+        self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.ball_launched = False
         self.score = 0
         self.ball_count = 5
@@ -98,7 +96,8 @@ class Game:
 
     def run(self):
         while not self.exit_game:
-            self.start_screen()
+            #self.start_screen()
+            self.reset_game()
             while self.running:
                 self.handle_events()
                 self.update()
@@ -152,8 +151,10 @@ class Game:
 
         for target in self.targets:
             if self.ball.check_collision(target):
-                self.targets.remove(target)
+                target.hit()  # Reduce target health
                 self.score += 1  # Increment score when a target is hit
+                if target.health <= 0:
+                    self.targets.remove(target)
 
     def draw(self):
         self.screen.fill(WHITE)
