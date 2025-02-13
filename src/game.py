@@ -33,6 +33,7 @@ class Game:
         self.running = True
         self.ball_launched = False  # Flag to track if the ball has been launched
         self.score = 0  # Initialize score
+        self.ball_count = 5  # Initialize ball count 
 
     def create_pyramid_targets(self, rows: int, start_x: int, start_y: int, width: int, height: int):
         targets = []
@@ -60,14 +61,32 @@ class Game:
                     if event.key == pygame.K_RETURN:
                         start = False
 
+    def game_over_screen(self):
+        start = True
+        while start:
+            self.screen.fill(WHITE)
+            font = pygame.font.Font(None, 74)
+            text = font.render("Game Over", True, BLACK)
+            self.screen.blit(text, (350, 250))
+            score_text = font.render(f"Score: {self.score}", True, BLACK)
+            self.screen.blit(score_text, (350, 350))
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+        pygame.quit()
+        exit()
+    
     def run(self):
-        #self.start_screen()
-        #sleep(0.5)
+        self.start_screen()
+        sleep(0.1)
         while self.running:
             self.handle_events()
             self.update()
             self.draw()
             self.clock.tick(60)
+        self.game_over_screen()
 
     def handle_events(self):
         if pygame.event.get(pygame.QUIT): self.running = False
@@ -80,15 +99,23 @@ class Game:
             if keys[pygame.K_RIGHT]: self.slingshot.stretch(1, 0)
 
             if keys[pygame.K_RETURN]:
-                    angle, power = self.slingshot.release()
-                    self.ball.launch(angle, power)
-                    self.ball_launched = True  # Set the flag to indicate the ball has been launched
-        
-        if keys[pygame.K_r]:  # Check for the "R" key to reset the ball
-                    self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
-                    self.ball_launched = False  # Reset the flag when the ball is reset
+                angle, power = self.slingshot.release()
+                self.ball.launch(angle, power)
+                self.ball_launched = True  # Set the flag to indicate the ball has been launched
+
+        if self.ball_launched:
+            if keys[pygame.K_r]:  # Check for the "R" key to reset the ball
+                self.reset_ball()
+    
+    def reset_ball(self):
+        self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
+        self.ball_launched = False
+        self.ball_count -= 1  # Decrement ball_count when the ball is reset
 
     def update(self):
+        if self.ball_count == 0:
+            self.running = False
+
         # Update the ball's position if it has been launched
         if self.ball_launched:
             self.ball.update()
@@ -97,13 +124,12 @@ class Game:
         if (self.ball.x < 0 or self.ball.x > SCREEN_WIDTH + 100 or
             self.ball.y < 0 or self.ball.y > SCREEN_HEIGHT):
             sleep(0.5)
-            self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
-            self.ball_launched = False
-
+            self.reset_ball()
+        
         self.ball.check_ground_collision(GROUND_HEIGHT)
+
         if self.ball.has_stopped() and self.ball_launched:
-            self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
-            self.ball_launched = False
+            self.reset_ball()
 
         for target in self.targets:
             if self.ball.check_collision(target):
@@ -122,5 +148,9 @@ class Game:
         font = pygame.font.Font(None, 36)
         score_text = font.render(f"Score: {self.score}", True, BLACK)
         self.screen.blit(score_text, (10, 10))
+        
+        # Draw the ball_count
+        ball_count_text = font.render(f"Balls: {self.ball_count}", True, BLACK)
+        self.screen.blit(ball_count_text, (10, 50))
         
         pygame.display.flip()
