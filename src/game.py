@@ -12,6 +12,12 @@ class Game:
         self.slingshot = Slingshot(100, 500)
         self.targets = [Target(600, 500), Target(700, 400)]
         self.running = True
+        self.key_states = {
+            pygame.K_UP: False,
+            pygame.K_DOWN: False,
+            pygame.K_LEFT: False,
+            pygame.K_RIGHT: False
+        }
 
     def run(self):
         while self.running:
@@ -26,20 +32,28 @@ class Game:
                 self.running = False
             
             elif event.type == pygame.KEYDOWN:
-                match event.key:
-                    case pygame.K_UP:
-                        self.slingshot.stretch(0, -1)
-                    case pygame.K_DOWN:
-                        self.slingshot.stretch(0, 1)
-                    case pygame.K_LEFT:
-                        self.slingshot.stretch(-1, 0)
-                    case pygame.K_RIGHT:
-                        self.slingshot.stretch(1, 0)
-                    case pygame.K_RETURN:
-                        angle, power = self.slingshot.release()
-                        self.ball.launch(angle, power)
+                if event.key in self.key_states:
+                    self.key_states[event.key] = True
+                elif event.key == pygame.K_RETURN:
+                    angle, power = self.slingshot.release()
+                    self.ball.launch(angle, power)
+                elif event.key == pygame.K_r:  # Check for the "R" key to reset the ball
+                    self.ball.reset(100, 500)
+
+            elif event.type == pygame.KEYUP:
+                if event.key in self.key_states:
+                    self.key_states[event.key] = False
 
     def update(self):
+        if self.key_states[pygame.K_UP]:
+            self.slingshot.stretch(0, -1)
+        if self.key_states[pygame.K_DOWN]:
+            self.slingshot.stretch(0, 1)
+        if self.key_states[pygame.K_LEFT]:
+            self.slingshot.stretch(-1, 0)
+        if self.key_states[pygame.K_RIGHT]:
+            self.slingshot.stretch(1, 0)
+
         self.ball.update()
         for target in self.targets:
             if self.ball.check_collision(target):

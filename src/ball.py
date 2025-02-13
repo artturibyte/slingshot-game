@@ -8,11 +8,15 @@ class Ball:
         self.velocity = [0, 0]
         self.radius = 15  # Example radius for collision detection
         self.bounce_damping = 0.7  # Damping factor for bounce effect
+        self.launched = False  # Flag to indicate if the ball has been launched
 
     def update(self):
+        if not self.launched:
+            return  # Do not update the ball's position if it has not been launched
+
         self.x += self.velocity[0]
         self.y += self.velocity[1]
-        self.velocity[1] += 0.01  # Gravity effect
+        self.velocity[1] += 0.05  # Gravity effect
 
         # Check collision with ground
         if self.y + self.radius >= 600:  # Assuming the ground is at y = 600
@@ -30,6 +34,7 @@ class Ball:
     def launch(self, angle, power):
         self.velocity[0] = power * cos(angle)
         self.velocity[1] = power * sin(angle)
+        self.launched = True  # Set the flag to indicate the ball has been launched
 
     def check_collision(self, target: Target):
         # Check collision with rectangle target
@@ -42,3 +47,4 @@ class Ball:
         self.x = x
         self.y = y
         self.velocity = [0, 0]
+        self.launched = False  # Reset the flag when the ball is reset
