@@ -6,7 +6,8 @@ from target import Target
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 600))
+        pygame.display.set_caption("Slingshot Game")
+        self.screen = pygame.display.set_mode((1000, 600))
         self.clock = pygame.time.Clock()
         self.ball = Ball(100, 500)
         self.slingshot = Slingshot(100, 500)
