@@ -20,6 +20,7 @@ class Game:
             pygame.K_LEFT: False,
             pygame.K_RIGHT: False
         }
+        self.score = 0  # Initialize score
 
     def start_screen(self):
         start = True
@@ -84,6 +85,7 @@ class Game:
         for target in self.targets:
             if self.ball.check_collision(target):
                 self.targets.remove(target)
+                self.score += 1  # Increment score when a target is hit
 
     def draw(self):
         self.screen.fill((255, 255, 255))
@@ -91,4 +93,10 @@ class Game:
         pygame.draw.circle(self.screen, (255, 0, 0), (int(self.ball.x), int(self.ball.y)), self.ball.radius)
         for target in self.targets:
             target.draw(self.screen)
+        
+        # Draw the score
+        font = pygame.font.Font(None, 36)
+        score_text = font.render(f"Score: {self.score}", True, (0, 0, 0))
+        self.screen.blit(score_text, (10, 10))
+        
         pygame.display.flip()
