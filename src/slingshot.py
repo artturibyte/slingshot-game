@@ -21,12 +21,11 @@ class Slingshot:
 
     def draw(self, screen):
         # Draw the slingshot line
-        pygame.draw.line(screen, (0, 0, 0), (self.x_origin, self.y_origin), (self.x_origin + self.stretch_x, self.y_origin + self.stretch_y), 5)
+        pygame.draw.line(screen, (0, 0, 0), (self.x_origin, self.y_origin), (self.x_origin + self.stretch_x, self.y_origin + self.stretch_y), 1)
         
         # Draw the arrowhead
         angle = math.atan2(self.stretch_y, self.stretch_x)
-        arrow_length = 20
-        arrow_width = 5
+        arrow_length = 5
         offset = 10  # Offset to draw the arrowhead further away
         end_x = self.x_origin + self.stretch_x + offset * math.cos(angle)
         end_y = self.y_origin + self.stretch_y + offset * math.sin(angle)

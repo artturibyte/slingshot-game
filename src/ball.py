@@ -6,28 +6,26 @@ class Ball:
         self.x = x
         self.y = y
         self.velocity = [0, 0]
-        self.radius = 15  # Example radius for collision detection
+        self.radius = 5  # Example radius for collision detection
         self.bounce_damping = 0.7  # Damping factor for bounce effect
         self.launched = False  # Flag to indicate if the ball has been launched
 
     def update(self):
-        if not self.launched:
-            return  # Do not update the ball's position if it has not been launched
-
         self.x += self.velocity[0]
         self.y += self.velocity[1]
         self.velocity[1] += 0.05  # Gravity effect
 
-        # Check collision with ground
-        if self.y + self.radius >= 600:  # Assuming the ground is at y = 600
-            self.y = 600 - self.radius
+    def check_ground_collision(self, ground_height):
+        min_bounce_speed = 0.05  # Minimum speed required for a bounce effect
+        if self.y + self.radius >= ground_height:  # Assuming the ground is at y = 600
+            self.y = ground_height - self.radius
             self.velocity[1] = -self.velocity[1] * self.bounce_damping
 
             # Apply damping to horizontal velocity as well
             self.velocity[0] *= self.bounce_damping
 
             # Stop the ball if the bounce is too small
-            if abs(self.velocity[0]) < 0.05:
+            if abs(self.velocity[0]) < min_bounce_speed:
                 self.velocity[1] = 0
                 self.velocity[0] = 0
 
