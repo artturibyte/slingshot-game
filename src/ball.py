@@ -1,4 +1,4 @@
-from math import cos, sin
+from math import cos, sin, sqrt
 from target import Target
 
 class Ball:
@@ -38,8 +38,24 @@ class Ball:
         # Check collision with rectangle target
         closest_x = max(target.x, min(self.x, target.x + target.width))
         closest_y = max(target.y, min(self.y, target.y + target.height))
-        distance = ((self.x - closest_x) ** 2 + (self.y - closest_y) ** 2) ** 0.5
-        return distance < self.radius
+        distance = sqrt((self.x - closest_x) ** 2 + (self.y - closest_y) ** 2)
+        
+        if distance < self.radius:
+            # Calculate the normal vector
+            normal_x = (self.x - closest_x) / distance
+            normal_y = (self.y - closest_y) / distance
+            
+            # Reflect the velocity vector
+            dot_product = self.velocity[0] * normal_x + self.velocity[1] * normal_y
+            self.velocity[0] -= 2 * dot_product * normal_x
+            self.velocity[1] -= 2 * dot_product * normal_y
+
+            # Apply damping to the velocity
+            self.velocity[0] *= self.bounce_damping
+            self.velocity[1] *= self.bounce_damping 
+            
+            return True
+        return False
 
     def reset(self, x, y):
         self.x = x

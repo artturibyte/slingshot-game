@@ -17,6 +17,7 @@ SCREEN_HEIGHT = 600
 GROUND_HEIGHT = 550
 
 # Constants for colors
+SKY_BLUE = (52, 158, 235)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -31,7 +32,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.targets: List[Target] = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10)
+        self.targets: List[Target]
         self.running = True
         self.ball_launched = False  # Flag to track if the ball has been launched
         self.score = 0  # Initialize score
@@ -91,7 +92,7 @@ class Game:
         self.ball_launched = False
         self.score = 0
         self.ball_count = 5
-        self.targets = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10)
+        self.targets = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10) + self.create_pyramid_targets(3, 500, GROUND_HEIGHT, 20, 10)
         self.running = True
 
     def run(self):
@@ -157,7 +158,7 @@ class Game:
                     self.targets.remove(target)
 
     def draw(self):
-        self.screen.fill(WHITE)
+        self.screen.fill(SKY_BLUE)
         self.slingshot.draw(self.screen)
         pygame.draw.line(self.screen, BLACK, (0, GROUND_HEIGHT), (SCREEN_WIDTH, GROUND_HEIGHT))
         pygame.draw.circle(self.screen, RED, (int(self.ball.x), int(self.ball.y)), self.ball.radius)
