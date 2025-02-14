@@ -1,43 +1,68 @@
 import pygame
 import math
+import utils
+
+BLACK = (0, 0, 0)
 
 class Slingshot:
     def __init__(self, x: int, y: int, max_length: int = 100):
-        self.x_origin = x
-        self.y_origin = y
-        self.stretch_x = 0
-        self.stretch_y = 0
+        self.bucket_x = x
+        self.bucket_y = y
+        self.vector_x = 0
+        self.vector_y = 0
         self.max_length = max_length
+        self.ball_launched = False
+
+        # Base coordinates
+        self.base_x = self.bucket_x + 50
+        self.base_y = self.bucket_y + 50
 
     def stretch(self, dx, dy):
-        new_stretch_x = self.stretch_x + dx
-        new_stretch_y = self.stretch_y + dy
-        length = math.sqrt(new_stretch_x ** 2 + new_stretch_y ** 2)
+        new_vector_x = self.vector_x + dx
+        new_vector_y = self.vector_y + dy
+        length = math.sqrt(new_vector_x ** 2 + new_vector_y ** 2)
         
         if length <= self.max_length:
-            self.stretch_x = new_stretch_x
-            self.stretch_y = new_stretch_y
-        
+            self.vector_x = new_vector_x
+            self.vector_y = new_vector_y
 
     def release(self):
-        angle = math.atan2(self.stretch_y, self.stretch_x)
-        power = math.sqrt(self.stretch_x ** 2 + self.stretch_y ** 2) / 20
-        self.stretch_x = 0
-        self.stretch_y = 0
+        angle = math.atan2(self.vector_y, self.vector_x)
+        power = math.sqrt(self.vector_x ** 2 + self.vector_y ** 2) / 20
+        self.vector_x = 0
+        self.vector_y = 0
         return angle, power
+    
+    def reset(self, bucket_x, bucket_y):
+        self.bucket_x = bucket_x
+        self.bucket_y = bucket_y
+        self.ball_launched = False
 
     def draw(self, screen):
-        # Draw the slingshot line
-        pygame.draw.line(screen, (0, 0, 0), (self.x_origin, self.y_origin), (self.x_origin + self.stretch_x, self.y_origin + self.stretch_y), 1)
+        # Draw the excavator-like arm system
+        angle = math.atan2(self.vector_y, self.vector_x)
+
+        if self.ball_launched:
+            angle = utils.calculate_angle([self.base_x, self.base_y], [self.bucket_x, self.bucket_y])
+            length = utils.calculate_length([self.base_x, self.base_y], [self.bucket_x, self.bucket_y])
+            if angle < -0.1:
+                new_angle = angle + 0.05
+                self.bucket_x = self.base_x + length * math.cos(new_angle)
+                self.bucket_y = self.base_y + length * math.sin(new_angle)
+            
+
+        pygame.draw.line(screen, BLACK, (self.base_x, self.base_y), (self.bucket_x, self.bucket_y), 2)
         
+        # Draw vector
+        pygame.draw.line(screen, BLACK, (self.bucket_x, self.bucket_y), (self.bucket_x + self.vector_x, self.bucket_y + self.vector_y), 1)
+
         # Draw the arrowhead
-        angle = math.atan2(self.stretch_y, self.stretch_x)
         arrow_length = 5
         offset = 10  # Offset to draw the arrowhead further away
-        end_x = self.x_origin + self.stretch_x + offset * math.cos(angle)
-        end_y = self.y_origin + self.stretch_y + offset * math.sin(angle)
+        end_x = self.bucket_x + self.vector_x + offset * math.cos(angle)
+        end_y = self.bucket_y + self.vector_y + offset * math.sin(angle)
         left_x = end_x - arrow_length * math.cos(angle - math.pi / 6)
         left_y = end_y - arrow_length * math.sin(angle - math.pi / 6)
         right_x = end_x - arrow_length * math.cos(angle + math.pi / 6)
         right_y = end_y - arrow_length * math.sin(angle + math.pi / 6)
-        pygame.draw.polygon(screen, (0, 0, 0), [(end_x, end_y), (left_x, left_y), (right_x, right_y)])
+        pygame.draw.polygon(screen, BLACK, [(end_x, end_y), (left_x, left_y), (right_x, right_y)])

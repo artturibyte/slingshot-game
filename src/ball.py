@@ -1,5 +1,6 @@
 from math import cos, sin, sqrt
 from target import Target
+from utils import calculate_angle, calculate_length
 
 class Ball:
     def __init__(self, x, y):
@@ -38,7 +39,7 @@ class Ball:
         # Check collision with rectangle target
         closest_x = max(target.x, min(self.x, target.x + target.width))
         closest_y = max(target.y, min(self.y, target.y + target.height))
-        distance = sqrt((self.x - closest_x) ** 2 + (self.y - closest_y) ** 2)
+        distance = calculate_length([self.x, self.y], [closest_x, closest_y])
         
         if distance < self.radius:
             # Calculate the normal vector

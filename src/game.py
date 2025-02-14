@@ -34,7 +34,6 @@ class Game:
         self.slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.targets: List[Target]
         self.running = True
-        self.ball_launched = False  # Flag to track if the ball has been launched
         self.score = 0  # Initialize score
         self.ball_count = 5  # Initialize ball count 
 
@@ -89,7 +88,7 @@ class Game:
 
     def reset_game(self):
         self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.ball_launched = False
+        self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.score = 0
         self.ball_count = 5
         self.targets = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10) + self.create_pyramid_targets(3, 500, GROUND_HEIGHT, 20, 10)
@@ -111,7 +110,7 @@ class Game:
         if pygame.event.get(pygame.QUIT): self.running = False
         keys = pygame.key.get_pressed()
 
-        if not self.ball_launched:
+        if not self.slingshot.ball_launched:
             if keys[pygame.K_UP]: self.slingshot.stretch(0, -1)
             if keys[pygame.K_DOWN]: self.slingshot.stretch(0, 1)
             if keys[pygame.K_LEFT]: self.slingshot.stretch(-1, 0)
@@ -120,15 +119,16 @@ class Game:
             if keys[pygame.K_RETURN]:
                 angle, power = self.slingshot.release()
                 self.ball.launch(angle, power)
-                self.ball_launched = True  # Set the flag to indicate the ball has been launched
+                self.slingshot.ball_launched = True  # Set the flag to indicate the ball has been launched
 
-        if self.ball_launched:
+        if self.slingshot.ball_launched:
             if keys[pygame.K_r]:  # Check for the "R" key to reset the ball
                 self.reset_ball()
     
     def reset_ball(self):
         self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.ball_launched = False
+        self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
+        self.slingshot.ball_launched = False
         self.ball_count -= 1  # Decrement ball_count when the ball is reset
 
     def update(self):
@@ -136,7 +136,7 @@ class Game:
             self.running = False
 
         # Update the ball's position if it has been launched
-        if self.ball_launched:
+        if self.slingshot.ball_launched:
             self.ball.update()
 
         # Check if the ball is out of bounds. Let ball roll little bit out of bounds before resetting.
@@ -147,7 +147,7 @@ class Game:
         
         self.ball.check_ground_collision(GROUND_HEIGHT)
 
-        if self.ball.has_stopped() and self.ball_launched:
+        if self.ball.has_stopped() and self.slingshot.ball_launched:
             self.reset_ball()
 
         for target in self.targets:

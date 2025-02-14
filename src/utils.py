@@ -1,5 +1,5 @@
 import pygame
-from math import atan2
+from math import atan2, sqrt
 
 def load_image(file_path):
     """Load an image from the specified file path."""
@@ -28,3 +28,9 @@ def calculate_angle(start_pos, end_pos):
     delta_x = end_pos[0] - start_pos[0]
     delta_y = end_pos[1] - start_pos[1]
     return atan2(delta_y, delta_x)
+
+def calculate_length(start_pos, end_pos):
+    """Calculate the length between two points."""
+    delta_x = end_pos[0] - start_pos[0]
+    delta_y = end_pos[1] - start_pos[1]
+    return sqrt(delta_x ** 2 + delta_y ** 2)
