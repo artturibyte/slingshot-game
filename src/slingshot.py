@@ -2,19 +2,26 @@ import pygame
 import math
 
 class Slingshot:
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int, max_length: int = 100):
         self.x_origin = x
         self.y_origin = y
         self.stretch_x = 0
         self.stretch_y = 0
+        self.max_length = max_length
 
     def stretch(self, dx, dy):
-        self.stretch_x += dx
-        self.stretch_y += dy
+        new_stretch_x = self.stretch_x + dx
+        new_stretch_y = self.stretch_y + dy
+        length = math.sqrt(new_stretch_x ** 2 + new_stretch_y ** 2)
+        
+        if length <= self.max_length:
+            self.stretch_x = new_stretch_x
+            self.stretch_y = new_stretch_y
+        
 
     def release(self):
         angle = math.atan2(self.stretch_y, self.stretch_x)
-        power = math.sqrt(self.stretch_x ** 2 + self.stretch_y ** 2) / 30
+        power = math.sqrt(self.stretch_x ** 2 + self.stretch_y ** 2) / 20
         self.stretch_x = 0
         self.stretch_y = 0
         return angle, power
