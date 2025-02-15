@@ -1,6 +1,6 @@
 import pygame
 import math
-import utils
+from utils import load_image, scale_image, calculate_length, calculate_angle
 
 BLACK = (0, 0, 0)
 
@@ -17,6 +17,11 @@ class Slingshot:
         self.base_x = self.bucket_x + 50
         self.base_y = self.bucket_y + 50
 
+        self.boom_lenght = calculate_length([self.base_x, self.base_y], [self.bucket_x, self.bucket_y])
+
+        # Load the slingshot line image
+        self.slingshot_line_image = scale_image(load_image('assets/arm.png'), self.boom_lenght)
+
     def stretch(self, dx, dy):
         new_vector_x = self.vector_x + dx
         new_vector_y = self.vector_y + dy
@@ -28,7 +33,7 @@ class Slingshot:
 
     def release(self):
         angle = math.atan2(self.vector_y, self.vector_x)
-        power = math.sqrt(self.vector_x ** 2 + self.vector_y ** 2) / 20
+        power = math.sqrt(self.vector_x ** 2 + self.vector_y ** 2) / 20 # divide by 20 to reduce the power
         self.vector_x = 0
         self.vector_y = 0
         return angle, power
@@ -42,16 +47,21 @@ class Slingshot:
         # Draw the excavator-like arm system
         angle = math.atan2(self.vector_y, self.vector_x)
 
-        if self.ball_launched:
-            angle = utils.calculate_angle([self.base_x, self.base_y], [self.bucket_x, self.bucket_y])
-            length = utils.calculate_length([self.base_x, self.base_y], [self.bucket_x, self.bucket_y])
-            if angle < -0.1:
-                new_angle = angle + 0.05
-                self.bucket_x = self.base_x + length * math.cos(new_angle)
-                self.bucket_y = self.base_y + length * math.sin(new_angle)
-            
+        line_angle = calculate_angle([self.base_x, self.base_y], [self.bucket_x, self.bucket_y])
 
-        pygame.draw.line(screen, BLACK, (self.base_x, self.base_y), (self.bucket_x, self.bucket_y), 2)
+        if self.ball_launched:
+            if line_angle < -0.1:
+                new_angle = line_angle + 0.05
+                self.bucket_x = self.base_x + self.boom_lenght * math.cos(new_angle)
+                self.bucket_y = self.base_y + self.boom_lenght * math.sin(new_angle)
+        
+
+        # Rotate the image to match the angle of the slingshot line
+        rotated_image = pygame.transform.rotate(self.slingshot_line_image, -math.degrees(line_angle))
+        rotated_rect = rotated_image.get_rect()
+        rotated_rect.center = ((self.base_x + self.bucket_x) // 2, (self.base_y + self.bucket_y) // 2)
+        
+        screen.blit(rotated_image, rotated_rect.topleft)
         
         # Draw vector
         pygame.draw.line(screen, BLACK, (self.bucket_x, self.bucket_y), (self.bucket_x + self.vector_x, self.bucket_y + self.vector_y), 1)

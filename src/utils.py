@@ -11,6 +11,13 @@ def load_image(file_path):
         print(f"Unable to load image at {file_path}: {e}")
         return None
 
+def scale_image(image, lenght):
+    """Scale an image to the specified width and height."""
+    original_width, original_height = image.get_size()
+    scale_factor = lenght / original_width
+    return pygame.transform.scale(image, (int(lenght), int(original_height * scale_factor)))
+
+
 def load_sound(file_path):
     """Load a sound from the specified file path."""
     try:
