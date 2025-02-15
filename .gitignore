@@ -6,5 +6,8 @@ dist/
 wheels/
 *.egg-info
 
+# Hiscore db
+highscores.db
+
 # Virtual environments
 .venv

@@ -4,6 +4,7 @@ from slingshot import Slingshot
 from target import Target
 from time import sleep
 from typing import List
+from database import create_connection, create_table, insert_highscore, get_highscores
 
 # Constants for ball initial position
 BALL_INITIAL_X = 100
@@ -23,6 +24,8 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
+DATABASE = "highscores.db"
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -36,6 +39,10 @@ class Game:
         self.running = True
         self.score = 0  # Initialize score
         self.ball_count = 5  # Initialize ball count 
+
+        # Initialize database
+        self.conn = create_connection(DATABASE)
+        create_table(self.conn)
 
     def create_pyramid_targets(self, rows: int, start_x: int, start_y: int, width: int, height: int):
         targets = []
@@ -64,17 +71,30 @@ class Game:
                         start = False
 
     def game_over_screen(self):
+        # Save the current score to the database
+        insert_highscore(self.conn, self.score)
+
+        # Get the top 5 high scores
+        highscores = get_highscores(self.conn)
+
         game_over = True
         while game_over:
             pygame.event.clear()
             self.screen.fill(WHITE)
             font = pygame.font.Font(None, 74)
-            text = font.render("Game Over", True, BLACK)
-            self.screen.blit(text, (350, 250))
-            score_text = font.render(f"Score: {self.score}", True, BLACK)
-            self.screen.blit(score_text, (350, 350))
+            text = font.render(f"Game Over! Score: {self.score}", True, BLACK)
+            self.screen.blit(text, (250, 50))
             restart_text = font.render("Press Enter to Restart", True, BLACK)
-            self.screen.blit(restart_text, (250, 450))
+            self.screen.blit(restart_text, (250, 150))
+
+            # Display high scores
+            highscore_font = pygame.font.Font(None, 36)
+            highscore_text = highscore_font.render("High Scores:", True, BLACK)
+            self.screen.blit(highscore_text, (350, 300))
+            for i, highscore in enumerate(highscores):
+                highscore_text = highscore_font.render(f"{i + 1}. {highscore[0]}", True, BLACK)
+                self.screen.blit(highscore_text, (350, 340 + i * 30))
+
             pygame.display.flip()
             sleep(1)
             for event in pygame.event.get():
@@ -82,7 +102,6 @@ class Game:
                     pygame.quit()
                     exit()
                 elif event.type == pygame.KEYDOWN:
-                    
                     if event.key == pygame.K_RETURN:
                         game_over = False
 
