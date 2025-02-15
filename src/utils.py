@@ -32,12 +32,12 @@ def calculate_length(start_pos, end_pos):
     delta_y = end_pos[1] - start_pos[1]
     return sqrt(delta_x ** 2 + delta_y ** 2)
 
-def create_pyramid_targets(rows: int, start_x: int, start_y: int, width: int, height: int):
+def create_pyramid_targets(rows: int, start_x: int, start_y: int, block_width: int, block_height: int):
     targets = []
-    offset = 5
+    offset = 5 # Offset between blocks
     for row in range(rows):
         for col in range(rows - row):
-            x = start_x + col * width + row * (width // 2) + col * offset
-            y = start_y - row * height - row * offset - height
-            targets.append(Target(x, y, width, height))
+            x = start_x + col * block_width + row * (block_width // 2) + col * offset
+            y = start_y - row * block_height - row * offset - block_height
+            targets.append(Target(x, y, block_width, block_height))
     return targets

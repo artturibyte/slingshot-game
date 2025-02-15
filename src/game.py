@@ -6,6 +6,7 @@ from time import sleep
 from typing import List
 from database import create_connection, create_table, insert_highscore, get_highscores
 from utils import create_pyramid_targets
+from utils import create_pyramid_targets
 
 # Constants for ball initial position
 BALL_INITIAL_X = 100
@@ -17,6 +18,8 @@ SCREEN_HEIGHT = 600
 
 # Game constants
 GROUND_HEIGHT = 550
+BLOCK_WIDTH = 20
+BLOCK_HEIGHT = 10
 
 # Constants for colors
 SKY_BLUE = (52, 158, 235)
@@ -28,7 +31,7 @@ GREEN = (0, 255, 0)
 DATABASE = "highscores.db"
 
 class Game:
-    def __init__(self):
+    def __init__(self, startup_ball_count: int = 5):
         pygame.init()
         pygame.display.set_caption("Slingshot Game")
         self.exit_game = False
@@ -39,7 +42,8 @@ class Game:
         self.targets: List[Target]
         self.running = True
         self.score = 0  # Initialize score
-        self.ball_count = 5  # Initialize ball count 
+        self.startupBallCount = startup_ball_count
+        self.ball_count: int = 5  # Initialize ball count 
 
         # Initialize database
         self.conn = create_connection(DATABASE)
@@ -100,7 +104,7 @@ class Game:
                         game_over = False
 
     def get_nickname(self):
-        """Prompt the user to enter their nickname."""
+        """Prompt the user to enter their nickname for hiscore."""
         pygame.event.clear()
         nickname = ""
         input_active = True
@@ -128,17 +132,20 @@ class Game:
         return nickname
 
     def reset_game(self):
+        pygame.event.clear()
         self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.score = 0
-        self.ball_count = 5
-        self.targets = create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10) + create_pyramid_targets(3, 500, GROUND_HEIGHT, 20, 10)
+        self.score = 0 # reset score
+        self.ball_count = self.startupBallCount
+        # creating two pyramids, side by side
+        self.targets = create_pyramid_targets(5, 600, GROUND_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT) + create_pyramid_targets(3, 500, GROUND_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT)
         self.running = True
 
     def run(self):
         while not self.exit_game:
             #self.start_screen()
             self.reset_game()
+            while self.running and not self.exit_game:
             while self.running and not self.exit_game:
                 self.handle_events()
                 self.update()
@@ -150,6 +157,7 @@ class Game:
     def handle_events(self):
         if pygame.event.get(pygame.QUIT): 
             self.running = False
+            self.exit_game = True
             self.exit_game = True
         
         keys = pygame.key.get_pressed()
