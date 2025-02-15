@@ -14,6 +14,7 @@ def create_table(conn):
     try:
         sql_create_highscores_table = """CREATE TABLE IF NOT EXISTS highscores (
                                             id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            nickname TEXT NOT NULL,
                                             score INTEGER NOT NULL
                                         );"""
         c = conn.cursor()
@@ -21,17 +22,17 @@ def create_table(conn):
     except sqlite3.Error as e:
         print(e)
 
-def insert_highscore(conn, score):
+def insert_highscore(conn, nickname, score):
     """Insert a new high score into the highscores table."""
-    sql = '''INSERT INTO highscores(score) VALUES(?)'''
+    sql = '''INSERT INTO highscores(nickname, score) VALUES(?, ?)'''
     cur = conn.cursor()
-    cur.execute(sql, (score,))
+    cur.execute(sql, (nickname, score))
     conn.commit()
     return cur.lastrowid
 
 def get_highscores(conn, limit=5):
     """Query the top high scores."""
     cur = conn.cursor()
-    cur.execute("SELECT score FROM highscores ORDER BY score DESC LIMIT ?", (limit,))
+    cur.execute("SELECT nickname, score FROM highscores ORDER BY score DESC LIMIT ?", (limit,))
     rows = cur.fetchall()
     return rows

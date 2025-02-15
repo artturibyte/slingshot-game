@@ -1,5 +1,6 @@
 import pygame
 from math import atan2, sqrt
+from target import Target
 
 def load_image(file_path):
     """Load an image from the specified file path."""
@@ -19,12 +20,8 @@ def load_sound(file_path):
         print(f"Unable to load sound at {file_path}: {e}")
         return None
 
-def clamp(value, min_value, max_value):
-    """Clamp a value between a minimum and maximum value."""
-    return max(min_value, min(value, max_value))
-
 def calculate_angle(start_pos, end_pos):
-    """Calculate the angle between two positions."""
+    """Calculate the angle between two vectors."""
     delta_x = end_pos[0] - start_pos[0]
     delta_y = end_pos[1] - start_pos[1]
     return atan2(delta_y, delta_x)
@@ -34,3 +31,13 @@ def calculate_length(start_pos, end_pos):
     delta_x = end_pos[0] - start_pos[0]
     delta_y = end_pos[1] - start_pos[1]
     return sqrt(delta_x ** 2 + delta_y ** 2)
+
+def create_pyramid_targets(rows: int, start_x: int, start_y: int, width: int, height: int):
+    targets = []
+    offset = 5
+    for row in range(rows):
+        for col in range(rows - row):
+            x = start_x + col * width + row * (width // 2) + col * offset
+            y = start_y - row * height - row * offset - height
+            targets.append(Target(x, y, width, height))
+    return targets

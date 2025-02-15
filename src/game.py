@@ -5,6 +5,7 @@ from target import Target
 from time import sleep
 from typing import List
 from database import create_connection, create_table, insert_highscore, get_highscores
+from utils import create_pyramid_targets
 
 # Constants for ball initial position
 BALL_INITIAL_X = 100
@@ -33,8 +34,8 @@ class Game:
         self.exit_game = False
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
-        self.ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
+        self.ball: Ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y)
+        self.slingshot: Slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.targets: List[Target]
         self.running = True
         self.score = 0  # Initialize score
@@ -43,16 +44,6 @@ class Game:
         # Initialize database
         self.conn = create_connection(DATABASE)
         create_table(self.conn)
-
-    def create_pyramid_targets(self, rows: int, start_x: int, start_y: int, width: int, height: int):
-        targets = []
-        offset = 5
-        for row in range(rows):
-            for col in range(rows - row):
-                x = start_x + col * width + row * (width // 2) + col * offset
-                y = start_y - row * height - row * offset - height
-                targets.append(Target(x, y, width, height))
-        return targets
 
     def start_screen(self):
         start = True
@@ -71,14 +62,17 @@ class Game:
                         start = False
 
     def game_over_screen(self):
+        # Prompt the user for their nickname
+        nickname = self.get_nickname()
+
         # Save the current score to the database
-        insert_highscore(self.conn, self.score)
+        insert_highscore(self.conn, nickname, self.score)
 
         # Get the top 5 high scores
         highscores = get_highscores(self.conn)
 
         game_over = True
-        while game_over:
+        while game_over and not self.exit_game:
             pygame.event.clear()
             self.screen.fill(WHITE)
             font = pygame.font.Font(None, 74)
@@ -92,32 +86,60 @@ class Game:
             highscore_text = highscore_font.render("High Scores:", True, BLACK)
             self.screen.blit(highscore_text, (350, 300))
             for i, highscore in enumerate(highscores):
-                highscore_text = highscore_font.render(f"{i + 1}. {highscore[0]}", True, BLACK)
+                highscore_text = highscore_font.render(f"{i + 1}. {highscore[0]}: {highscore[1]}", True, BLACK)
                 self.screen.blit(highscore_text, (350, 340 + i * 30))
 
             pygame.display.flip()
             sleep(1)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+                    self.exit_game = True
+
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         game_over = False
+
+    def get_nickname(self):
+        """Prompt the user to enter their nickname."""
+        pygame.event.clear()
+        nickname = ""
+        input_active = True
+        font = pygame.font.Font(None, 34)
+        
+        while input_active and not self.exit_game:
+            self.screen.fill(WHITE)
+            prompt_text = font.render("Enter your nickname for hiscore:", True, BLACK)
+            self.screen.blit(prompt_text, (250, 250))
+            nickname_text = font.render(nickname, True, BLACK)
+            self.screen.blit(nickname_text, (250, 350))
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.exit_game = True
+
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        input_active = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        nickname = nickname[:-1]
+                    else:
+                        nickname += event.unicode
+        return nickname
 
     def reset_game(self):
         self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.score = 0
         self.ball_count = 5
-        self.targets = self.create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10) + self.create_pyramid_targets(3, 500, GROUND_HEIGHT, 20, 10)
+        self.targets = create_pyramid_targets(5, 600, GROUND_HEIGHT, 20, 10) + create_pyramid_targets(3, 500, GROUND_HEIGHT, 20, 10)
         self.running = True
 
     def run(self):
         while not self.exit_game:
             #self.start_screen()
             self.reset_game()
-            while self.running:
+            while self.running and not self.exit_game:
                 self.handle_events()
                 self.update()
                 self.draw()
@@ -128,6 +150,7 @@ class Game:
     def handle_events(self):
         if pygame.event.get(pygame.QUIT): 
             self.running = False
+            self.exit_game = True
         
         keys = pygame.key.get_pressed()
 
@@ -149,7 +172,7 @@ class Game:
         if self.slingshot.ball_launched:
             if keys[pygame.K_r]:  # Check for the "R" key to reset the ball
                 self.reset_ball()
-    
+
     def reset_ball(self):
         self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
