@@ -1,6 +1,6 @@
-from math import cos, sin, sqrt
+from math import cos, sin
 from target import Target
-from utils import calculate_angle, calculate_length
+from utils import calculate_length
 
 class Ball:
     def __init__(self, x, y):
@@ -17,8 +17,8 @@ class Ball:
         self.velocity[1] += 0.05  # Gravity effect
 
     def check_ground_collision(self, ground_height):
-        min_bounce_speed = 0.05  # Minimum speed required for a bounce effect
-        if self.y + self.radius >= ground_height:  # Assuming the ground is at y = 600
+        min_bounce_speed = 0.05  # Minimum required speed for a bounce effect
+        if self.y + self.radius >= ground_height:
             self.y = ground_height - self.radius
             self.velocity[1] = -self.velocity[1] * self.bounce_damping
 

@@ -107,14 +107,20 @@ class Game:
         pygame.quit()
 
     def handle_events(self):
-        if pygame.event.get(pygame.QUIT): self.running = False
+        if pygame.event.get(pygame.QUIT): 
+            self.running = False
+        
         keys = pygame.key.get_pressed()
 
         if not self.slingshot.ball_launched:
-            if keys[pygame.K_UP]: self.slingshot.stretch(0, -1)
-            if keys[pygame.K_DOWN]: self.slingshot.stretch(0, 1)
-            if keys[pygame.K_LEFT]: self.slingshot.stretch(-1, 0)
-            if keys[pygame.K_RIGHT]: self.slingshot.stretch(1, 0)
+            if keys[pygame.K_UP]: 
+                self.slingshot.stretch(0, -1)
+            if keys[pygame.K_DOWN]: 
+                self.slingshot.stretch(0, 1)
+            if keys[pygame.K_LEFT]: 
+                self.slingshot.stretch(-1, 0)
+            if keys[pygame.K_RIGHT]: 
+                self.slingshot.stretch(1, 0)
 
             if keys[pygame.K_RETURN]:
                 angle, power = self.slingshot.release()
