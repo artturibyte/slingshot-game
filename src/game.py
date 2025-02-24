@@ -6,7 +6,8 @@ from time import sleep
 from typing import List
 from database import create_connection, create_table, insert_highscore, get_highscores
 from utils import create_pyramid_targets
-from utils import create_pyramid_targets
+from text_item import TextItem
+
 
 # Constants for ball initial position
 BALL_INITIAL_X = 100
@@ -153,10 +154,75 @@ class Game:
             self.game_over_screen()
         pygame.quit()
 
+    def store_screen(self):
+        pygame.event.clear()
+        store_open = True
+        store_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        store_surface.set_alpha(128)  # Set transparency level (0-255)
+        
+        def draw_overlay():
+            # draw dark overlay for store.
+            self.screen.blit(store_surface, (0, 0))
+        
+        def flash_text(text_item: TextItem):
+            # Flash the item text
+            item = store_item_font.render(text_item.text, True, WHITE)
+            self.screen.blit(item, text_item.position)
+            pygame.display.flip()
+            pygame.time.delay(100)  # Flash duration
+            return store_item_font.render(text_item.text, True, text_item.color)
+
+        # Init store texts
+        font = pygame.font.Font(None, 74)
+        
+        text = font.render("Store", True, BLACK)
+        
+        store_item_font = pygame.font.Font(None, 36)
+        item1_text = TextItem("1. Extra Ball: -5 points", (350, 200), BLACK)
+        item2_text = TextItem("2. Power Boost: -10 points", (350, 250), BLACK)
+
+        item1 = store_item_font.render(item1_text.text, True, item1_text.color)
+        item2 = store_item_font.render(item2_text.text, True, item1_text.color)
+
+        # Draw the store overlay
+        draw_overlay()
+
+        while store_open and not self.exit_game:
+            # Display title
+            self.screen.blit(text, (450, 50))
+            # Display store items
+            self.screen.blit(item1, item1_text.position)
+            self.screen.blit(item2, item2_text.position)
+
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.exit_game = True
+                    store_open = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_1 and self.score > - 10:
+                        self.ball_count += 1
+                        self.score -= 5
+                        # Update scores & ball count and draw the overlay again
+                        self.draw()
+                        draw_overlay()
+                        item1 = flash_text(item1_text)
+                    elif event.key == pygame.K_2 and self.score > - 10:
+                        # Implement power boost logic here
+                        self.score -= 10
+                        # Update scores & ball count and draw the overlay again
+                        self.draw()
+                        draw_overlay()
+                        item2 = flash_text(item1_text)
+                    elif event.key == pygame.K_s  or event.key == pygame.K_ESCAPE:
+                        store_open = False
+
+        pygame.event.clear()
+        sleep(0.1)
+
     def handle_events(self):
         if pygame.event.get(pygame.QUIT): 
             self.running = False
-            self.exit_game = True
             self.exit_game = True
         
         keys = pygame.key.get_pressed()
@@ -179,6 +245,9 @@ class Game:
         if self.slingshot.ball_launched:
             if keys[pygame.K_r]:  # Check for the "R" key to reset the ball
                 self.reset_ball()
+
+        if keys[pygame.K_s]:  # Check for the "S" key to open the store
+            self.store_screen()
 
     def reset_ball(self):
         self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
@@ -220,12 +289,10 @@ class Game:
         for target in self.targets:
             target.draw(self.screen)
         
-        # Draw the score
         font = pygame.font.Font(None, 36)
         score_text = font.render(f"Score: {self.score}", True, BLACK)
         self.screen.blit(score_text, (10, 10))
-        
-        # Draw the ball_count
+
         ball_count_text = font.render(f"Balls: {self.ball_count}", True, BLACK)
         self.screen.blit(ball_count_text, (10, 50))
         
