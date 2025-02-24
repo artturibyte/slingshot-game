@@ -14,13 +14,14 @@ class Slingshot:
         self.ball_launched = False
 
         # Base coordinates
-        self.base_x = self.bucket_x + 50
-        self.base_y = self.bucket_y + 50
+        self.base_x = self.bucket_x + 80
+        self.base_y = self.bucket_y + 80
 
         self.boom_lenght = calculate_length([self.base_x, self.base_y], [self.bucket_x, self.bucket_y])
 
-        # Load the slingshot line image
+        # Load images
         self.slingshot_line_image = scale_image(load_image('assets/arm.png'), self.boom_lenght)
+        self.excavator_image = scale_image(load_image('assets/excavator.png'), 120)
 
     def stretch(self, dx, dy):
         new_vector_x = self.vector_x + dx
@@ -61,6 +62,7 @@ class Slingshot:
         rotated_rect = rotated_image.get_rect()
         rotated_rect.center = ((self.base_x + self.bucket_x) // 2, (self.base_y + self.bucket_y) // 2)
         
+        screen.blit(self.excavator_image, (self.base_x - 80, self.base_y - 60))
         screen.blit(rotated_image, rotated_rect.topleft)
         
         # Draw vector

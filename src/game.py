@@ -10,7 +10,7 @@ from utils import create_pyramid_targets
 
 # Constants for ball initial position
 BALL_INITIAL_X = 100
-BALL_INITIAL_Y = 500
+BALL_INITIAL_Y = 445
 
 # Constants for screen size
 SCREEN_WIDTH = 1000
@@ -145,7 +145,6 @@ class Game:
         while not self.exit_game:
             #self.start_screen()
             self.reset_game()
-            while self.running and not self.exit_game:
             while self.running and not self.exit_game:
                 self.handle_events()
                 self.update()
