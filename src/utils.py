@@ -1,6 +1,7 @@
 import pygame
 from math import atan2, sqrt
 from target import Target
+from constants import TARGET_WIDTH, TARGET_HEIGHT
 
 def load_image(file_path):
     """Load an image from the specified file path."""
@@ -16,7 +17,6 @@ def scale_image(image, lenght):
     original_width, original_height = image.get_size()
     scale_factor = lenght / original_width
     return pygame.transform.scale(image, (int(lenght), int(original_height * scale_factor)))
-
 
 def load_sound(file_path):
     """Load a sound from the specified file path."""
@@ -39,12 +39,13 @@ def calculate_length(start_pos, end_pos):
     delta_y = end_pos[1] - start_pos[1]
     return sqrt(delta_x ** 2 + delta_y ** 2)
 
-def create_pyramid_targets(rows: int, start_x: int, start_y: int, block_width: int, block_height: int):
+def create_pyramid_targets(rows: int, start_x: int, start_y):
     targets = []
-    offset = 5 # Offset between blocks
+    
+    offset = 5 # Offset between TARGETs
     for row in range(rows):
         for col in range(rows - row):
-            x = start_x + col * block_width + row * (block_width // 2) + col * offset
-            y = start_y - row * block_height - row * offset - block_height
-            targets.append(Target(x, y, block_width, block_height))
+            x = start_x + col * TARGET_WIDTH + row * (TARGET_WIDTH // 2) + col * offset
+            y = start_y - row * TARGET_HEIGHT - row * offset - TARGET_HEIGHT
+            targets.append(Target(x, y))
     return targets

@@ -1,20 +1,26 @@
 import pygame
+from constants import TARGET_WIDTH, TARGET_HEIGHT
 
-class Target:
-    def __init__(self, x, y, width, height, health=2):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+class Target(pygame.sprite.Sprite):
+    def __init__(self, x, y, health=2):
+        super().__init__()
+        self.image = pygame.Surface((TARGET_WIDTH, TARGET_HEIGHT))
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.health = health  # Initialize health
-        self.color = (0, 255, 0)  # Initial color
+        self.update_color()
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+    def update_color(self):
+        if self.health == 2:
+            self.image.fill((0, 255, 0))  # Green
+        elif self.health == 1:
+            self.image.fill((255, 255, 0))  # Yellow
+        elif self.health <= 0:
+            self.image.fill((255, 0, 0))  # Red
+
+    def update(self):
+        # This method can be used to update the sprite's state
+        pass
 
     def hit(self):
         self.health -= 1
-        if self.health == 1:
-            self.color = (255, 255, 0)  # Change color to yellow when health is 1
-        elif self.health <= 0:
-            self.color = (255, 0, 0)  # Change color to red when health is 0
+        self.update_color()

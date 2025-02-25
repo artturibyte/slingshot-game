@@ -37,8 +37,8 @@ class Ball:
 
     def check_collision(self, target: Target):
         # Check collision with rectangle target
-        closest_x = max(target.x, min(self.x, target.x + target.width))
-        closest_y = max(target.y, min(self.y, target.y + target.height))
+        closest_x = max(target.rect.left, min(self.x, target.rect.x + target.rect.width))
+        closest_y = max(target.rect.y, min(self.y, target.rect.y + target.rect.width))
         distance = calculate_length([self.x, self.y], [closest_x, closest_y])
         
         if distance < self.radius:

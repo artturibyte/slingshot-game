@@ -7,29 +7,7 @@ from typing import List
 from database import create_connection, create_table, insert_highscore, get_highscores
 from utils import create_pyramid_targets
 from text_item import TextItem
-
-
-# Constants for ball initial position
-BALL_INITIAL_X = 100
-BALL_INITIAL_Y = 445
-
-# Constants for screen size
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 600
-
-# Game constants
-GROUND_HEIGHT = 550
-BLOCK_WIDTH = 20
-BLOCK_HEIGHT = 10
-
-# Constants for colors
-SKY_BLUE = (52, 158, 235)
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-
-DATABASE = "highscores.db"
+from constants import *
 
 class Game:
     def __init__(self, startup_ball_count: int = 5):
@@ -40,7 +18,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.ball: Ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot: Slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.targets: List[Target]
+        self.targets = pygame.sprite.Group()
         self.running = True
         self.score = 0  # Initialize score
         self.startupBallCount = startup_ball_count
@@ -136,10 +114,15 @@ class Game:
         pygame.event.clear()
         self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
-        self.score = 0 # reset score
+        # reset score
+        self.score = 0 
+        # reset ballcount
         self.ball_count = self.startupBallCount
-        # creating two pyramids, side by side
-        self.targets = create_pyramid_targets(5, 600, GROUND_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT) + create_pyramid_targets(3, 500, GROUND_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT)
+
+        self.targets.empty()
+        # Add two separate pyramids
+        self.targets.add(*create_pyramid_targets(5, 600, GROUND_HEIGHT))
+        self.targets.add(*create_pyramid_targets(3, 500, GROUND_HEIGHT))
         self.running = True
 
     def run(self):
@@ -158,7 +141,9 @@ class Game:
         pygame.event.clear()
         store_open = True
         store_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        store_surface.set_alpha(128)  # Set transparency level (0-255)
+        
+        # Set transparency (0-255) for store screen
+        store_surface.set_alpha(128)  
         
         def draw_overlay():
             # draw dark overlay for store.
@@ -182,7 +167,7 @@ class Game:
         item2_text = TextItem("2. Power Boost: -10 points", (350, 250), BLACK)
 
         item1 = store_item_font.render(item1_text.text, True, item1_text.color)
-        item2 = store_item_font.render(item2_text.text, True, item1_text.color)
+        item2 = store_item_font.render(item2_text.text, True, item2_text.color)
 
         # Draw the store overlay
         draw_overlay()
@@ -281,13 +266,14 @@ class Game:
                 if target.health <= 0:
                     self.targets.remove(target)
 
+        self.targets.update()
+
     def draw(self):
         self.screen.fill(SKY_BLUE)
         self.slingshot.draw(self.screen)
         pygame.draw.line(self.screen, BLACK, (0, GROUND_HEIGHT), (SCREEN_WIDTH, GROUND_HEIGHT))
         pygame.draw.circle(self.screen, RED, (int(self.ball.x), int(self.ball.y)), self.ball.radius)
-        for target in self.targets:
-            target.draw(self.screen)
+        self.targets.draw(self.screen)
         
         font = pygame.font.Font(None, 36)
         score_text = font.render(f"Score: {self.score}", True, BLACK)
