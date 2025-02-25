@@ -1,7 +1,6 @@
 import pygame
 from ball import Ball
 from slingshot import Slingshot
-from target import Target
 from time import sleep
 from database import create_connection, create_table, insert_highscore, get_highscores
 from utils import create_pyramid_targets

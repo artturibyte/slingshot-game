@@ -8,3 +8,7 @@ dependencies = [
     "pygame>=2.6.1",
     "ruff>=0.9.6",
 ]
+
+
+[tool.ruff.lint]
+ignore = ["F405", "F403"]

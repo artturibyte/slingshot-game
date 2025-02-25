@@ -1,6 +1,3 @@
-from typing import Tuple
-
-
 class TextItem:
     def __init__(self, text, position, color):
         self.text = text
