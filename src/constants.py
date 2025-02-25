@@ -2,6 +2,8 @@
 BALL_INITIAL_X = 100
 BALL_INITIAL_Y = 445
 
+BALL_RADIUS = 5
+
 # Constants for screen size
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600

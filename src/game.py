@@ -3,7 +3,6 @@ from ball import Ball
 from slingshot import Slingshot
 from target import Target
 from time import sleep
-from typing import List
 from database import create_connection, create_table, insert_highscore, get_highscores
 from utils import create_pyramid_targets
 from text_item import TextItem
@@ -16,7 +15,7 @@ class Game:
         self.exit_game = False
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
-        self.ball: Ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y)
+        self.ball: Ball = Ball()
         self.slingshot: Slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.targets = pygame.sprite.Group()
         self.running = True
@@ -112,7 +111,7 @@ class Game:
 
     def reset_game(self):
         pygame.event.clear()
-        self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
+        self.ball.reset()
         self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         # reset score
         self.score = 0 
@@ -235,7 +234,7 @@ class Game:
             self.store_screen()
 
     def reset_ball(self):
-        self.ball.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
+        self.ball.reset()
         self.slingshot.reset(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.slingshot.ball_launched = False
         self.ball_count -= 1  # Decrement ball_count when the ball is reset
@@ -249,8 +248,8 @@ class Game:
             self.ball.update()
 
         # Check if the ball is out of bounds. Let ball roll little bit out of bounds before resetting.
-        if (self.ball.x < 0 or self.ball.x > SCREEN_WIDTH + 100 or
-            self.ball.y < 0 or self.ball.y > SCREEN_HEIGHT):
+        if (self.ball.position.x < 0 or self.ball.position.x > SCREEN_WIDTH + 100 or
+            self.ball.position.y < 0 or self.ball.position.y > SCREEN_HEIGHT):
             sleep(0.5)
             self.reset_ball()
         
@@ -272,7 +271,7 @@ class Game:
         self.screen.fill(SKY_BLUE)
         self.slingshot.draw(self.screen)
         pygame.draw.line(self.screen, BLACK, (0, GROUND_HEIGHT), (SCREEN_WIDTH, GROUND_HEIGHT))
-        pygame.draw.circle(self.screen, RED, (int(self.ball.x), int(self.ball.y)), self.ball.radius)
+        pygame.draw.circle(self.screen, RED, (int(self.ball.position.x), int(self.ball.position.y)), self.ball.radius)
         self.targets.draw(self.screen)
         
         font = pygame.font.Font(None, 36)
