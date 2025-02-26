@@ -6,21 +6,28 @@ from database import create_connection, create_table, insert_highscore, get_high
 from utils import create_pyramid_targets
 from text_item import TextItem
 from constants import *
+from enum import Enum
+
+class GameState(Enum):
+    STORE = 1
+    RUNNING = 2
+    GAMEOVER = 3
+    EXIT = 4
 
 class Game:
-    def __init__(self, startup_ball_count: int = 5):
+    def __init__(self, startup_ball_count: int = 10):
         pygame.init()
+        self.game_state: GameState = GameState.RUNNING
         pygame.display.set_caption("Slingshot Game")
-        self.exit_game = False
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.ball: Ball = Ball()
         self.slingshot: Slingshot = Slingshot(BALL_INITIAL_X, BALL_INITIAL_Y)
         self.targets = pygame.sprite.Group()
-        self.running = True
         self.score = 0  # Initialize score
         self.startupBallCount = startup_ball_count
-        self.ball_count: int = 5  # Initialize ball count 
+        self.ball_count: int  # Initialize ball count
+        self.level: int = 1
 
         # Initialize database
         self.conn = create_connection(DATABASE)
@@ -58,8 +65,8 @@ class Game:
         # Get the top 5 high scores
         highscores = get_highscores(self.conn)
 
-        game_over = True
-        while game_over and not self.exit_game:
+        self.game_state = GameState.GAMEOVER
+        while self.game_state == GameState.GAMEOVER:
             pygame.event.clear()
             self.screen.fill(WHITE)
             font = pygame.font.Font(None, 74)
@@ -71,20 +78,20 @@ class Game:
             # Display high scores
             highscore_font = pygame.font.Font(None, 36)
             highscore_text = highscore_font.render("High Scores:", True, BLACK)
-            self.screen.blit(highscore_text, (350, 300))
+            self.screen.blit(highscore_text, (350, 250))
             for i, highscore in enumerate(highscores):
                 highscore_text = highscore_font.render(f"{i + 1}. {highscore[0]}: {highscore[1]}", True, BLACK)
-                self.screen.blit(highscore_text, (350, 340 + i * 30))
+                self.screen.blit(highscore_text, (350, 280 + i * 30))
 
             pygame.display.flip()
             sleep(1)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.exit_game = True
+                    self.game_state = GameState.EXIT
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        game_over = False
+                        self.game_state = GameState.RUNNING
 
     def get_nickname(self):
         """Prompt the user to enter their nickname for hiscore."""
@@ -93,7 +100,7 @@ class Game:
         input_active = True
         font = pygame.font.Font(None, 34)
         
-        while input_active and not self.exit_game:
+        while input_active and self.game_state != GameState.EXIT:
             self.screen.fill(WHITE)
             prompt_text = font.render("Enter your nickname for hiscore:", True, BLACK)
             self.screen.blit(prompt_text, (250, 250))
@@ -103,7 +110,7 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.exit_game = True
+                    self.game_state = GameState.EXIT
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
@@ -113,6 +120,16 @@ class Game:
                     else:
                         nickname += event.unicode
         return nickname
+    
+    def create_level_1(self):
+        # Add two separate pyramids
+        self.targets.add(*create_pyramid_targets(5, 600, GROUND_HEIGHT))
+        self.targets.add(*create_pyramid_targets(3, 400, GROUND_HEIGHT))
+
+    def create_level_2(self):
+        # Add two pyramids top of each other
+        self.targets.add(*create_pyramid_targets(5, 600, GROUND_HEIGHT))
+        self.targets.add(*create_pyramid_targets(5, 600, GROUND_HEIGHT - 100))
 
     def reset_game(self):
         pygame.event.clear()
@@ -124,16 +141,14 @@ class Game:
         self.ball_count = self.startupBallCount
 
         self.targets.empty()
-        # Add two separate pyramids
-        self.targets.add(*create_pyramid_targets(5, 600, GROUND_HEIGHT))
-        self.targets.add(*create_pyramid_targets(3, 500, GROUND_HEIGHT))
-        self.running = True
+        self.create_level_1()
+
 
     def run(self):
-        while not self.exit_game:
+        while not self.game_state == GameState.EXIT:
             #self.start_screen()
             self.reset_game()
-            while self.running and not self.exit_game:
+            while self.game_state == GameState.RUNNING:
                 self.handle_events()
                 self.update()
                 self.draw()
@@ -143,7 +158,8 @@ class Game:
 
     def store_screen(self):
         pygame.event.clear()
-        store_open = True
+        self.game_state = GameState.STORE
+        self.draw()
         store_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         
         # Set transparency (0-255) for store screen
@@ -176,7 +192,7 @@ class Game:
         # Draw the store overlay
         draw_overlay()
 
-        while store_open and not self.exit_game:
+        while self.game_state == GameState.STORE and self.game_state != GameState.EXIT:
             # Display title
             self.screen.blit(text, (450, 50))
             # Display store items
@@ -186,8 +202,8 @@ class Game:
             pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.exit_game = True
-                    store_open = False
+                    self.game_state = GameState.EXIT
+
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1 and self.score > - 10:
                         self.ball_count += 1
@@ -202,18 +218,20 @@ class Game:
                         # Update scores & ball count and draw the overlay again
                         self.draw()
                         draw_overlay()
-                        item2 = flash_text(item1_text)
+                        item2 = flash_text(item2_text)
                     elif event.key == pygame.K_s  or event.key == pygame.K_ESCAPE:
-                        store_open = False
+                        self.game_state = GameState.RUNNING
+                        pygame.event.clear()
+                        sleep(0.1)
 
         pygame.event.clear()
-        sleep(0.1)
+
 
     def handle_events(self):
         if pygame.event.get(pygame.QUIT): 
-            self.running = False
-            self.exit_game = True
-        
+            self.game_state = GameState.EXIT
+            exit()
+            
         keys = pygame.key.get_pressed()
 
         if not self.slingshot.ball_launched:
@@ -246,11 +264,23 @@ class Game:
 
     def update(self):
         if self.ball_count == 0:
-            self.running = False
+            sleep(2)
+            self.game_state = GameState.GAMEOVER
 
         # Update the ball's position if it has been launched
         if self.slingshot.ball_launched:
             self.ball.update()
+        
+        # update level if all targets cleared
+        if len(self.targets) == 0 and self.level == 1:
+            self.create_level_2()
+            self.level += 1
+        
+        if len(self.targets) == 0 and self.level == 2:
+            self.score += self.ball_count
+            sleep(2)
+            self.game_state = GameState.GAMEOVER
+
 
         # Check if the ball is out of bounds. Let ball roll little bit out of bounds before resetting.
         if (self.ball.position.x < 0 or self.ball.position.x > SCREEN_WIDTH + 100 or
@@ -288,11 +318,6 @@ class Game:
         
         pygame.draw.circle(self.screen, RED, (int(self.ball.position.x), int(self.ball.position.y)), self.ball.radius)
         self.targets.draw(self.screen)
-
-        if not self.slingshot.ball_launched:
-            font = pygame.font.Font(None, 36)
-            score_text = font.render("Press SPACE to launch!", True, BLACK)
-            self.screen.blit(score_text, (350, 200))
         
         # SCORE:
         font = pygame.font.Font(None, 36)
@@ -301,5 +326,20 @@ class Game:
         # BALLS left:
         ball_count_text = font.render(f"Balls: {self.ball_count}", True, BLACK)
         self.screen.blit(ball_count_text, (10, 50))
-        
+        # LEVEL:
+        level_text = font.render(f"Level: {self.level}", True, BLACK)
+        self.screen.blit(level_text, (SCREEN_WIDTH - 150, 10))  # Adjust the position as needed
+
+        if self.game_state == GameState.RUNNING:
+            store_text = font.render("Press 'S' to open the store", True, BLACK)
+            self.screen.blit(store_text, (350, 20))
+
+            if not self.slingshot.ball_launched:
+                launch_text = font.render("Press SPACE to launch!", True, BLACK)
+                self.screen.blit(launch_text, (320, 200))
+            else:
+                # Display instructions for restarting and opening the store
+                restart_text = font.render("Press 'R' to reset the ball", True, BLACK)
+                self.screen.blit(restart_text, (350, 50))
+
         pygame.display.flip()

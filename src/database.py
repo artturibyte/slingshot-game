@@ -31,7 +31,7 @@ def insert_highscore(conn: sqlite3.Connection, nickname: str, score: int):
     conn.commit()
     return cur.lastrowid
 
-def get_highscores(conn: sqlite3.Connection, limit: int = 5):
+def get_highscores(conn: sqlite3.Connection, limit: int = 10):
     """Query the top high scores."""
     cur = conn.cursor()
     cur.execute("SELECT nickname, score FROM highscores ORDER BY score DESC LIMIT ?", (limit,))

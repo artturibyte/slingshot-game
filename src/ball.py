@@ -48,7 +48,10 @@ class Ball(pygame.sprite.Sprite):
         
         if distance < self.radius:
             # Calculate the normal vector
-            normal = pygame.math.Vector2(self.position.x - closest_x, self.position.y - closest_y).normalize()
+            if distance != 0:
+                normal = pygame.math.Vector2(self.position.x - closest_x, self.position.y - closest_y).normalize()
+            else:
+                normal = 0
             
             # Reflect the velocity vector
             dot_product = self.velocity.dot(normal)
