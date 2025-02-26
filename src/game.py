@@ -26,6 +26,12 @@ class Game:
         self.conn = create_connection(DATABASE)
         create_table(self.conn)
 
+        # Load cloud images
+        self.cloud1 = pygame.image.load('assets/Cloud1.png').convert_alpha()
+        self.cloud2 = pygame.image.load('assets/Cloud2.png').convert_alpha()
+        self.cloud3 = pygame.image.load('assets/Cloud3.png').convert_alpha()
+        self.cloud4 = pygame.image.load('assets/Cloud4.png').convert_alpha()
+
     def start_screen(self):
         start = True
         while start:
@@ -220,7 +226,7 @@ class Game:
             if keys[pygame.K_RIGHT]: 
                 self.slingshot.stretch(1, 0)
 
-            if keys[pygame.K_RETURN]:
+            if keys[pygame.K_SPACE]:
                 angle, power = self.slingshot.release()
                 self.ball.launch(angle, power)
                 self.slingshot.ball_launched = True  # Set the flag to indicate the ball has been launched
@@ -268,15 +274,31 @@ class Game:
 
     def draw(self):
         self.screen.fill(SKY_BLUE)
+        
+        # Draw clouds
+        self.screen.blit(self.cloud1, (100, 150))
+        self.screen.blit(self.cloud2, (400, 250))
+        self.screen.blit(self.cloud3, (600, 200))
+        self.screen.blit(self.cloud4, (800, 250))
+        
         self.slingshot.draw(self.screen)
-        pygame.draw.line(self.screen, BLACK, (0, GROUND_HEIGHT), (SCREEN_WIDTH, GROUND_HEIGHT))
+        
+        # Draw the ground as a filled rectangle
+        pygame.draw.rect(self.screen, BROWN, (0, GROUND_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT - GROUND_HEIGHT))
+        
         pygame.draw.circle(self.screen, RED, (int(self.ball.position.x), int(self.ball.position.y)), self.ball.radius)
         self.targets.draw(self.screen)
+
+        if not self.slingshot.ball_launched:
+            font = pygame.font.Font(None, 36)
+            score_text = font.render("Press SPACE to launch!", True, BLACK)
+            self.screen.blit(score_text, (350, 200))
         
+        # SCORE:
         font = pygame.font.Font(None, 36)
         score_text = font.render(f"Score: {self.score}", True, BLACK)
         self.screen.blit(score_text, (10, 10))
-
+        # BALLS left:
         ball_count_text = font.render(f"Balls: {self.ball_count}", True, BLACK)
         self.screen.blit(ball_count_text, (10, 50))
         
