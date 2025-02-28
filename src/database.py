@@ -15,7 +15,6 @@ def create_table(conn: sqlite3.Connection):
         sql_create_highscores_table = """CREATE TABLE IF NOT EXISTS highscores (
                                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                                             nickname TEXT NOT NULL,
-                                            nickname TEXT NOT NULL,
                                             score INTEGER NOT NULL
                                         );"""
         c = conn.cursor()

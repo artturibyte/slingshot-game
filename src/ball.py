@@ -50,15 +50,16 @@ class Ball(pygame.sprite.Sprite):
             # Calculate the normal vector
             if distance != 0:
                 normal = pygame.math.Vector2(self.position.x - closest_x, self.position.y - closest_y).normalize()
+                # Reflect the velocity vector
+                dot_product = self.velocity.dot(normal)
+                self.velocity -= 2 * dot_product * normal
+                            
+                # Apply damping to the velocity
+                self.velocity *= self.bounce_damping
             else:
-                normal = 0
-            
-            # Reflect the velocity vector
-            dot_product = self.velocity.dot(normal)
-            self.velocity -= 2 * dot_product * normal
+                # Sometimes distance is 0, which causes a division by 0 error
+                self.velocity.xy = 0, -3
 
-            # Apply damping to the velocity
-            self.velocity *= self.bounce_damping
             
             return True
         return False
