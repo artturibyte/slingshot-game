@@ -7,6 +7,7 @@ from utils import create_pyramid_targets
 from text_item import TextItem
 from constants import *
 from enum import Enum
+import math
 
 class GameState(Enum):
     STORE = 1
@@ -28,6 +29,7 @@ class Game:
         self.startupBallCount = startup_ball_count
         self.ball_count: int  # Initialize ball count
         self.level: int = 1
+        self.measure_system_enable = False
 
         # Initialize database
         self.conn = create_connection(DATABASE)
@@ -143,7 +145,20 @@ class Game:
         self.targets.empty()
         self.create_level_1()
 
+    def draw_trajectory(self):
+        angle, power = self.slingshot.get_angle_and_power()
+        start_x, start_y = self.slingshot.bucket_pos
 
+        for t in range(0, 200, 5):
+
+            x = start_x + power * t * math.cos(-angle) 
+            y = start_y + power * t * math.sin(angle) + 0.025 * t ** 2
+
+            if y > GROUND_HEIGHT:
+                break  # Stop drawing if the trajectory goes below the ground
+
+            pygame.draw.circle(self.screen, RED, (int(x), int(y)), 2)
+        
     def run(self):
         while not self.game_state == GameState.EXIT:
             #self.start_screen()
@@ -184,7 +199,7 @@ class Game:
         
         store_item_font = pygame.font.Font(None, 36)
         item1_text = TextItem("1. Extra Ball: -5 points", (350, 200), BLACK)
-        item2_text = TextItem("2. Power Boost: -10 points", (350, 250), BLACK)
+        item2_text = TextItem("2. MachineControlSystem3000: -30 points", (350, 250), BLACK)
 
         item1 = store_item_font.render(item1_text.text, True, item1_text.color)
         item2 = store_item_font.render(item2_text.text, True, item2_text.color)
@@ -212,9 +227,9 @@ class Game:
                         self.draw()
                         draw_overlay()
                         item1 = flash_text(item1_text)
-                    elif event.key == pygame.K_2 and self.score > - 10:
-                        # Implement power boost logic here
-                        self.score -= 10
+                    elif event.key == pygame.K_2 and self.score - 30 > - 10:
+                        self.measure_system_enable = True
+                        self.score -= 30
                         # Update scores & ball count and draw the overlay again
                         self.draw()
                         draw_overlay()
@@ -281,7 +296,6 @@ class Game:
             sleep(2)
             self.game_state = GameState.GAMEOVER
 
-
         # Check if the ball is out of bounds. Let ball roll little bit out of bounds before resetting.
         if (self.ball.position.x < 0 or self.ball.position.x > SCREEN_WIDTH + 100 or
             self.ball.position.y < 0 or self.ball.position.y > SCREEN_HEIGHT):
@@ -311,13 +325,16 @@ class Game:
         self.screen.blit(self.cloud3, (600, 200))
         self.screen.blit(self.cloud4, (800, 250))
         
-        self.slingshot.draw(self.screen)
         
         # Draw the ground as a filled rectangle
         pygame.draw.rect(self.screen, BROWN, (0, GROUND_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT - GROUND_HEIGHT))
         
         pygame.draw.circle(self.screen, RED, (int(self.ball.position.x), int(self.ball.position.y)), self.ball.radius)
         self.targets.draw(self.screen)
+        self.slingshot.draw(self.screen)
+
+        if not self.slingshot.ball_launched and self.measure_system_enable:
+            self.draw_trajectory()
         
         # SCORE:
         font = pygame.font.Font(None, 36)

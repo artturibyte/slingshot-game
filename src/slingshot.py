@@ -24,6 +24,11 @@ class Slingshot:
         if new_vector.length() <= self.max_length:
             self.vector = new_vector
 
+    def get_angle_and_power(self):
+        angle = math.atan2(self.vector.y, self.vector.x)
+        power = self.vector.length() / 20  # divide by 20 to reduce the power
+        return angle, power
+
     def release(self):
         angle = math.atan2(self.vector.y, self.vector.x)
         power = self.vector.length() / 20  # divide by 20 to reduce the power
@@ -35,7 +40,7 @@ class Slingshot:
         self.ball_launched = False
 
     def draw(self, screen):
-        # Draw the excavator-like arm system
+        # Draw the excavator arm system
         angle = math.atan2(self.vector.y, self.vector.x)
 
         line_angle = calculate_angle([self.base_pos.x, self.base_pos.y], [self.bucket_pos.x, self.bucket_pos.y])
