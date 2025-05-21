@@ -1,24 +1,5 @@
 # Slingshot Game
 
-This is a simple slingshot game built using Pygame, inspired by the classic Angry Birds gameplay. The objective of the game is to launch birds using a slingshot to hit targets and achieve the highest score possible.
-
-## Project Structure
-
-```
-slingshot-game
-├── src
-│   ├── main.py         # Entry point of the game
-│   ├── game.py         # Main game logic
-│   ├── slingshot.py    # Slingshot mechanics
-│   ├── bird.py         # Bird representation and behavior
-│   └── utils.py        # Utility functions
-├── assets
-│   ├── images          # Image assets for the game
-│   └── sounds          # Sound assets for the game
-├── requirements.txt     # Project dependencies
-└── README.md            # Project documentation
-```
-
 ## Installation
 
 1. Clone the repository:
