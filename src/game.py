@@ -9,6 +9,7 @@ from constants import *
 from enum import Enum
 import math
 
+
 class GameState(Enum):
     STORE = 1
     RUNNING = 2
@@ -101,16 +102,18 @@ class Game:
         nickname = ""
         input_active = True
         font = pygame.font.Font(None, 34)
-        
+        max_length = 12  # Optional: limit nickname length
+
         while input_active and self.game_state != GameState.EXIT:
             self.screen.fill(WHITE)
             prompt_text = font.render("Enter your nickname for hiscore:", True, BLACK)
+            prompt_text2 = font.render("(can be stuck, try to press r)", True, BLACK)
             self.screen.blit(prompt_text, (250, 250))
+            self.screen.blit(prompt_text2, (250, 270))
             nickname_text = font.render(nickname, True, BLACK)
             self.screen.blit(nickname_text, (250, 350))
-            pygame.display.flip()
-
-            for event in pygame.event.get():
+            pygame.display.flip()     
+            for event in pygame.event.get():      
                 if event.type == pygame.QUIT:
                     self.game_state = GameState.EXIT
 
@@ -120,7 +123,9 @@ class Game:
                     elif event.key == pygame.K_BACKSPACE:
                         nickname = nickname[:-1]
                     else:
-                        nickname += event.unicode
+                        # Only add printable characters and limit length
+                        if event.unicode.isprintable() and len(nickname) < max_length:
+                            nickname += event.unicode
         return nickname
     
     def create_level_1(self):
@@ -263,6 +268,7 @@ class Game:
                 angle, power = self.slingshot.release()
                 self.ball.launch(angle, power)
                 self.slingshot.ball_launched = True  # Set the flag to indicate the ball has been launched
+                pygame.event.clear()
 
         if self.slingshot.ball_launched:
             if keys[pygame.K_r]:  # Check for the "R" key to reset the ball
